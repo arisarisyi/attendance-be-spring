@@ -28,4 +28,12 @@ public class BaseEntity {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "deleted_at")
     private Date deletedAt;
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 }

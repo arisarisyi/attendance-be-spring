@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,10 +18,7 @@ import java.util.UUID;
 @Table(name = "\"user\"")
 public class User extends BaseEntity{
     @Id
-    @GeneratedValue
     private UUID id;
-
-    private String username;
 
     private String password;
 
@@ -39,4 +37,9 @@ public class User extends BaseEntity{
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private List<CheckIn> checkIn;
+
+    @PrePersist
+    public void beforePersist() {
+        setCreatedAt(new Date());
+    }
 }

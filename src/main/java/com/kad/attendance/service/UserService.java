@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.UUID;
+
 @Service
 public class UserService {
 
@@ -19,17 +21,20 @@ public class UserService {
     @Transactional
     public void register(RegisterUserRequest request){
 
-        if (userRepository.existsById(request.getNpk())){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"NPK already registered");
+        User existingUser = userRepository.findByNpk(request.getNpk());
+        if (existingUser != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "NPK already registered");
         }
 
+
+
         User user = new User();
-        user.setUsername(request.getUsername());
-        user.setNpk(request.getNpk());
+        user.setId(UUID.randomUUID());
+        user.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
+        user.setNpk(request.getNpk());
         user.setRole(request.getRole());
-        user.setPassword(BCrypt.hashpw(request.getPassword(), BCrypt.gensalt()));
 
         userRepository.save(user);
     }
