@@ -4,6 +4,7 @@ import com.kad.attendance.model.WebResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,4 +22,11 @@ public class ErrorController {
         return ResponseEntity.status(exception.getStatusCode())
                 .body(WebResponse.<String>builder().errors(exception.getReason()).build());
     }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<WebResponse<String>> handleUsernameNotFoundException(UsernameNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(WebResponse.<String>builder().errors("NPK not found").build());
+    }
+
 }

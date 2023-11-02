@@ -2,23 +2,24 @@ package com.kad.attendance.controller;
 
 import com.kad.attendance.entities.User;
 import com.kad.attendance.model.RegisterUserRequest;
+import com.kad.attendance.model.UpdateUserRequest;
 import com.kad.attendance.model.UserResponse;
 import com.kad.attendance.model.WebResponse;
 import com.kad.attendance.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 public class UserController {
     @Autowired
     private UserService userService;
 
     @PostMapping(
-            path = "/api/users",
+            path = "/register",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -27,13 +28,34 @@ public class UserController {
         return WebResponse.<String>builder().data("OK").build();
     }
 
+        @PatchMapping(
+                path = "/update",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE
+        )
+        public WebResponse<UserResponse> update (
+                User user,
+                @RequestBody UpdateUserRequest request,
+                @RequestHeader("Authorization") String authHeader){
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String jwtToken = authHeader.replace("Bearer ", "");
+                UserResponse userResponse = userService.update(jwtToken, user, request);
+                return WebResponse.<UserResponse>builder().data(userResponse).build();
+            }
+            return WebResponse.<UserResponse>builder().build();
+        }
 
     @GetMapping(
-            path = "/api/users/current",
+            path = "/current",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<UserResponse> get(User user) {
-        UserResponse userResponse = userService.get(user);
-        return WebResponse.<UserResponse>builder().data(userResponse).build();
+    public WebResponse<UserResponse> getUser(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String jwtToken = authHeader.replace("Bearer ", "");
+            UserResponse userResponse = userService.getData(jwtToken);
+            return WebResponse.<UserResponse>builder().data(userResponse).build();
+        }
+        return WebResponse.<UserResponse>builder().build();
     }
-}
+    }
+

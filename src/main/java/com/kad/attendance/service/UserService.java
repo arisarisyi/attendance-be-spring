@@ -3,6 +3,7 @@ package com.kad.attendance.service;
 import com.kad.attendance.config.JwtService;
 import com.kad.attendance.entities.User;
 import com.kad.attendance.model.RegisterUserRequest;
+import com.kad.attendance.model.UpdateUserRequest;
 import com.kad.attendance.model.UserResponse;
 import com.kad.attendance.repository.UserRepository;
 import com.kad.attendance.security.BCrypt;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,6 +25,10 @@ public class UserService {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private ValidationService validationService;
+
 
     @Transactional
     public void register(RegisterUserRequest request){
@@ -48,10 +54,57 @@ public class UserService {
 
     public UserResponse get(User user) {
         return UserResponse.builder()
+                .id(user.getId())
                 .npk(user.getNpk())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .role(user.getNpk())
+                .build();
+    }
+
+    public UserResponse getData(String jwtToken){
+        try{
+            String npk = jwtService.extractNpk(jwtToken);
+
+            Optional<User> checkUserOptional = userRepository.findByNpk(npk);
+
+            User checkUser = checkUserOptional.get();
+
+            return this.get(checkUser);
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+
+    }
+
+    @Transactional
+    public UserResponse update(String jwtToken, User user, UpdateUserRequest request){
+        validationService.validate(request);
+
+        String npk = jwtService.extractNpk(jwtToken);
+
+        User existingUser = userRepository.findByNpk(npk).orElseThrow(()->new RuntimeException());
+
+        if(Objects.nonNull(request.getFirstName())){
+            existingUser.setFirstName(request.getFirstName());
+        }
+
+        if(Objects.nonNull(request.getLastName())){
+            existingUser.setLastName(request.getLastName());
+        }
+
+        if(Objects.nonNull(request.getPassword())){
+            existingUser.setPassword(BCrypt.hashpw(request.getPassword(),BCrypt.gensalt()));
+        }
+
+        userRepository.save(existingUser);
+
+        return UserResponse.builder()
+                .id(existingUser.getId())
+                .firstName(existingUser.getFirstName())
+                .lastName(existingUser.getLastName())
+                .npk(existingUser.getNpk())
+                .role(existingUser.getRole().toString())
                 .build();
     }
 }

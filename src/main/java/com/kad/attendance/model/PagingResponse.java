@@ -9,9 +9,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class TokenResponse {
+public class PagingResponse {
 
-    private String token;
+    private Integer currentPage;
 
-    private Long expiredAt;
+    private Integer totalPage;
+
+    private Integer size;
 }

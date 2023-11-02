@@ -9,6 +9,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User,String> {
     Optional<User> findByNpk(String npk);
+    User findOneByNpk(String npk);
 
     Optional<User> findFirstByToken(String token);
 }

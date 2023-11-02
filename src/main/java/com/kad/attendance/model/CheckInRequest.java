@@ -1,5 +1,6 @@
 package com.kad.attendance.model;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,9 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class TokenResponse {
+public class CheckInRequest {
 
-    private String token;
+    @NotBlank
+    private Double latitude;
 
-    private Long expiredAt;
+    @NotBlank
+    private Double longitude;
 }

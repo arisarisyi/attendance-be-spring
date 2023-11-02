@@ -20,7 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "_user")
-public class User implements UserDetails {
+public class User extends BaseEntity implements UserDetails {
     @Id
     private UUID id;
 
@@ -34,6 +34,7 @@ public class User implements UserDetails {
 
     private String token;
 
+    @Column(unique = true)
     private String npk;
 
     @Enumerated(EnumType.STRING)
@@ -45,10 +46,10 @@ public class User implements UserDetails {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private List<CheckIn> checkIn;
 
-//    @PrePersist
-//    public void beforePersist() {
-//        setCreatedAt(new Date());
-//    }
+    @PrePersist
+    public void beforePersist() {
+        setCreatedAt(new Date());
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
