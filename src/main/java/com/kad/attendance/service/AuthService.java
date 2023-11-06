@@ -45,16 +45,6 @@ public class AuthService {
         User user = userRepository.findByNpk(request.getNpk())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or password wrong"));
 
-//        var jwtToken = jwtService.generateToken(user);
-//        user.setToken(jwtToken);
-//        user.setTokenExpiredAt(next30Days());
-//        userRepository.save(user);
-//
-//        return TokenResponse.builder()
-//                .token(jwtToken)
-//                .expiredAt(user.getTokenExpiredAt())
-//                .build();
-
         if (BCrypt.checkpw(request.getPassword(), user.getPassword())) {
 
             var jwtToken = jwtService.generateToken(user);
@@ -73,5 +63,16 @@ public class AuthService {
 
     private Long next30Days() {
         return System.currentTimeMillis() + (1000 * 16 * 24 * 30);
+    }
+
+    public void logout(String jwtToken){
+        String npk = jwtService.extractNpk(jwtToken);
+
+        User existingUser = userRepository.findByNpk(npk).orElseThrow(()->new RuntimeException());
+
+        existingUser.setToken(null);
+        existingUser.setTokenExpiredAt(null);
+
+        userRepository.save(existingUser);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -78,12 +79,15 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse update(String jwtToken, User user, UpdateUserRequest request){
+    public UserResponse update(String jwtToken, UpdateUserRequest request){
         validationService.validate(request);
 
         String npk = jwtService.extractNpk(jwtToken);
 
-        User existingUser = userRepository.findByNpk(npk).orElseThrow(()->new RuntimeException());
+        User existingUser = userRepository.findByNpk(npk).orElseThrow(
+                ()->new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User is not found")
+        );
 
         if(Objects.nonNull(request.getFirstName())){
             existingUser.setFirstName(request.getFirstName());
@@ -96,6 +100,8 @@ public class UserService {
         if(Objects.nonNull(request.getPassword())){
             existingUser.setPassword(BCrypt.hashpw(request.getPassword(),BCrypt.gensalt()));
         }
+
+        existingUser.setUpdatedAt(new Date());
 
         userRepository.save(existingUser);
 

@@ -4,6 +4,7 @@ import com.kad.attendance.config.JwtService;
 import com.kad.attendance.entities.CheckIn;
 import com.kad.attendance.entities.User;
 import com.kad.attendance.model.CheckInRequest;
+import com.kad.attendance.model.CheckInResponse;
 import com.kad.attendance.model.UserResponse;
 import com.kad.attendance.repository.CheckInRepository;
 import com.kad.attendance.repository.UserRepository;
@@ -32,37 +33,47 @@ public class CheckInService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private ValidationService validation;
+
     @Transactional
-    public void checkIn(String jwtToken){
+    public CheckInResponse checkIn(String jwtToken, CheckInRequest request){
         try{
+            validation.validate(request);
+
             String npk = jwtService.extractNpk(jwtToken);
 
-            Optional<User> checkUserOptional = userRepository.findByNpk(npk);
+            User existingUser = userRepository.findByNpk(npk).orElseThrow(
+                    ()->new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "User is not found")
+            );
 
-            // Sekarang Anda memiliki seluruh data pengguna dalam objek 'checkUser'
+            CheckIn checkIn = new CheckIn();
+            checkIn.setLatitude(request.getLatitude());
+            checkIn.setLongitude(request.getLongitude());
+            checkIn.setUser(existingUser);
 
-            Optional<User> checkUser = userRepository.findByNpk(npk);
-            User checkUser1 = checkUser.get();
+            checkInRepository.save(checkIn);
 
-            var iniNpk = this.get(checkUser1).getNpk();
-            System.out.println(iniNpk);
-
-            if(!checkUser.isPresent()){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee not exists");
-            }
+            return CheckInResponse.builder()
+                    .id(checkIn.getId())
+                    .user(checkIn.getUser())
+                    .latitude(checkIn.getLatitude())
+                    .longitude(checkIn.getLongitude())
+                    .build();
 
         }
         catch(Exception e){
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage());
         }
     }
 
-    public UserResponse get(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .npk(user.getNpk())
-                .lastName(user.getLastName())
-                .firstName(user.getFirstName())
+    public CheckInResponse get(CheckIn checkIn) {
+        return CheckInResponse.builder()
+                .id(checkIn.getId())
+                .user(checkIn.getUser())
+                .latitude(checkIn.getLatitude())
+                .longitude(checkIn.getLongitude())
                 .build();
     }
 }

@@ -34,12 +34,11 @@ public class UserController {
                 produces = MediaType.APPLICATION_JSON_VALUE
         )
         public WebResponse<UserResponse> update (
-                User user,
                 @RequestBody UpdateUserRequest request,
                 @RequestHeader("Authorization") String authHeader){
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String jwtToken = authHeader.replace("Bearer ", "");
-                UserResponse userResponse = userService.update(jwtToken, user, request);
+                UserResponse userResponse = userService.update(jwtToken, request);
                 return WebResponse.<UserResponse>builder().data(userResponse).build();
             }
             return WebResponse.<UserResponse>builder().build();
