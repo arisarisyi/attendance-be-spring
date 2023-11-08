@@ -1,6 +1,6 @@
 package com.kad.attendance.model;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CheckInRequest {
 
-    @NotBlank
+    @NotNull
     private Double latitude;
 
-    @NotBlank
+    @NotNull
     private Double longitude;
 }

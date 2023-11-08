@@ -14,5 +14,5 @@ public class CheckInResponse {
     private Long id;
     private Double latitude;
     private Double longitude;
-    private User user;
+    private UserResponse user;
 }

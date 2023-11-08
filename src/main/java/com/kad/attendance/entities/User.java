@@ -1,5 +1,6 @@
 package com.kad.attendance.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,6 +45,7 @@ public class User extends BaseEntity implements UserDetails {
     private Long tokenExpiredAt;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @JsonBackReference
     private List<CheckIn> checkIn;
 
     @PrePersist
