@@ -1,5 +1,6 @@
 package com.kad.attendance.resolver;
 
+import com.kad.attendance.config.JwtService;
 import com.kad.attendance.entities.User;
 import com.kad.attendance.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +21,9 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private JwtService jwtService;
+
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return User.class.equals(parameter.getParameterType());
@@ -28,14 +32,16 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         HttpServletRequest servletRequest = (HttpServletRequest) webRequest.getNativeRequest();
-        String token = servletRequest.getHeader("X-API-TOKEN");
-        System.out.println(token);
-        log.info("TOKEN {}", token);
+        String token = servletRequest.getHeader("Authorization");
+        String jwtToken = token.substring(7);
+
+        String npk = jwtService.extractNpk(jwtToken);
+
         if(token == null){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Unauthorized");
         }
 
-        User user = userRepository.findFirstByToken(token)
+        User user = userRepository.findByNpk(npk)
                 .orElseThrow(()->new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Unauthorized"));
 
         if (user.getTokenExpiredAt() < System.currentTimeMillis()) {

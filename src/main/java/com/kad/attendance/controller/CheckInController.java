@@ -1,10 +1,12 @@
 package com.kad.attendance.controller;
 
 import com.kad.attendance.entities.CheckIn;
+import com.kad.attendance.entities.User;
 import com.kad.attendance.model.CheckInRequest;
 import com.kad.attendance.model.CheckInResponse;
 import com.kad.attendance.model.WebResponse;
 import com.kad.attendance.service.CheckInService;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,27 +26,20 @@ public class CheckInController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<CheckInResponse> checkIn(@RequestHeader("Authorization") String authHeader, @RequestBody CheckInRequest req){
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String jwtToken = authHeader.replace("Bearer ", "");
-            CheckInResponse data = checkInService.checkIn(jwtToken, req);
+    public WebResponse<CheckInResponse> checkIn(@RequestBody CheckInRequest req,User user){
+        CheckInResponse data = checkInService.checkIn(user, req);
 
-            return WebResponse.<CheckInResponse>builder().data(data).build();
-        }
-        return null;
+        return WebResponse.<CheckInResponse>builder().data(data).build();
     }
 
     @GetMapping(
             path = "/check-in/{checkInId}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<CheckInResponse> get(@RequestHeader("Authorization") String authHeader,
-                                            @PathVariable("checkInId")int checkInId){
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String jwtToken = authHeader.replace("Bearer ", "");
-            CheckInResponse data = checkInService.get(jwtToken, checkInId);
-            return WebResponse.<CheckInResponse>builder().data(data).build();
-        }
-        return null;
+    public WebResponse<CheckInResponse> get(@PathVariable("checkInId")Integer checkInId,
+                                            @Parameter(hidden = true) User user){
+
+        CheckInResponse data = checkInService.get(checkInId,user);
+        return WebResponse.<CheckInResponse>builder().data(data).build();
     }
 }
