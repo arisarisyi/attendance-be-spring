@@ -9,10 +9,12 @@ import com.kad.attendance.model.SearchCheckInRequest;
 import com.kad.attendance.model.UserResponse;
 import com.kad.attendance.repository.CheckInRepository;
 import com.kad.attendance.repository.UserRepository;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -89,28 +92,36 @@ public class CheckInService {
                 .build();
     }
 
-//    @Transactional(readOnly = true)
-//    public Page<CheckInResponse> search(User user, SearchCheckInRequest request){
-//        Specification<CheckIn> specification = (root, query, builder)->{
-//           List<Predicate> predicates= new ArrayList<>();
-//           predicates.add(builder.equal(root.get("user"),user));
-//
-//           if(Objects.nonNull(request.getCreatedAt())){
-//               predicates.add(builder.like(root.get("createdAt"),"%"+request.getCreatedAt()+"%"));
-//           }
-//
-//           if(Objects.nonNull(request.getUserId())){
-//               predicates.add(builder.like(root.get("userId"),"%"+request.getUserId()+"%"));
-//           }
-//
-//           return query.where(predicates.toArray(new Predicate[]{})).getRestriction();
-//        };
-//
-//        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-//        Page<CheckIn> checkIns = checkInRepository.findAll(specification,pageable);
-//        List<CheckInResponse> checkInResponses = checkIns.getContent().stream()
-//                .map(checkIn -> toCheckInResponse(checkIn))
-//                .collect(Collectors.toList());
-//    }
+    @Transactional(readOnly = true)
+    public Page<CheckInResponse> search(User user, SearchCheckInRequest request){
+        Specification<CheckIn> specification = (root, query, builder)->{
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(builder.equal(root.get("user"), user));
 
+            if(Objects.nonNull(request.getCreatedAt())){
+                Expression<Date> createdAtDate = builder.function("DATE", Date.class, root.get("createdAt"));
+                predicates.add(builder.equal(createdAtDate, request.getCreatedAt()));
+            }
+
+            if(user.getRole().toString() == "SUPERADMIN"){
+                if (Objects.nonNull(request.getUserId())) {
+                    predicates.add(builder.equal(root.get("user").get("id"), request.getUserId()));
+                }
+            } else {
+                throw new RuntimeException("Unauthorized");
+            }
+
+            return query.where(predicates.toArray(new Predicate[]{})).getRestriction();
+        };
+
+        UserResponse userResponse = toUserResponse(user);
+
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        Page<CheckIn> checkIns = checkInRepository.findAll(specification,pageable);
+        List<CheckInResponse> checkInResponses = checkIns.getContent().stream()
+                .map(checkIn -> toCheckInResponse(userResponse,checkIn))
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(checkInResponses, pageable, checkIns.getTotalElements());
+    }
 }

@@ -6,14 +6,22 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CheckOutRequest {
-    @NotNull
-    private Double latitude;
+public class SearchCheckOutRequest {
+
+    private UUID userId;
+
+    private Date createdAt;
 
     @NotNull
-    private Double longitude;
+    private Integer page;
+
+    @NotNull
+    private Integer size;
 }

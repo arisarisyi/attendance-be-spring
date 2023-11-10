@@ -1,9 +1,8 @@
 package com.kad.attendance.controller;
 
-import com.kad.attendance.entities.CheckIn;
 import com.kad.attendance.entities.User;
 import com.kad.attendance.model.*;
-import com.kad.attendance.service.CheckInService;
+import com.kad.attendance.service.CheckOutService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -20,55 +19,54 @@ import java.util.UUID;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-public class CheckInController {
+public class CheckOutController {
     @Autowired
-    private CheckInService checkInService;
+    private CheckOutService checkOutService;
 
     @PostMapping(
-            path = "/check-in",
+            path = "/check-out",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<CheckInResponse> checkIn(@RequestBody CheckInRequest req,User user){
-        CheckInResponse data = checkInService.checkIn(user, req);
+    public WebResponse<CheckOutResponse> checkOut(@RequestBody CheckOutRequest request, User user){
+        CheckOutResponse data = checkOutService.checkOut(user,request);
 
-        return WebResponse.<CheckInResponse>builder().data(data).build();
+        return WebResponse.<CheckOutResponse>builder().data(data).build();
     }
 
     @GetMapping(
-            path = "/check-in/{checkInId}",
+            path = "/check-out/{checkOutId}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<CheckInResponse> get(@PathVariable("checkInId")Integer checkInId,
-                                            @Parameter(hidden = true) User user){
-
-        CheckInResponse data = checkInService.get(checkInId,user);
-        return WebResponse.<CheckInResponse>builder().data(data).build();
+    public WebResponse<CheckOutResponse> get(@PathVariable("checkOutId")Integer id,
+                                             @Parameter(hidden = true)User user){
+        CheckOutResponse data = checkOutService.get(id, user);
+        return WebResponse.<CheckOutResponse>builder().data(data).build();
     }
 
     @GetMapping(
-            path = "/api/check-in",
+            path = "/api/check-out",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<List<CheckInResponse>> search(@Parameter(hidden = true) User user,
+    public WebResponse<List<CheckOutResponse>> search(@Parameter(hidden = true) User user,
                                                      @RequestParam(value = "createdAt", required = false) Date createdAt,
                                                      @RequestParam(value = "userId", required = false) UUID userId,
                                                      @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
-                                                     @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
-        SearchCheckInRequest request = SearchCheckInRequest.builder()
+                                                     @RequestParam(value = "size", required = false, defaultValue = "10") Integer size){
+        SearchCheckOutRequest request = SearchCheckOutRequest.builder()
                 .page(page)
                 .size(size)
                 .createdAt(createdAt)
                 .userId(userId)
                 .build();
 
-        Page<CheckInResponse> checkInResponses = checkInService.search(user, request);
-        return WebResponse.<List<CheckInResponse>>builder()
-                .data(checkInResponses.getContent())
+        Page<CheckOutResponse> checkOutResponses = checkOutService.search(user,request);
+        return WebResponse.<List<CheckOutResponse>>builder()
+                .data(checkOutResponses.getContent())
                 .paging(PagingResponse.builder()
-                        .currentPage(checkInResponses.getNumber())
-                        .totalPage(checkInResponses.getTotalPages())
-                        .size(checkInResponses.getSize())
+                        .currentPage(checkOutResponses.getNumber())
+                        .totalPage(checkOutResponses.getTotalPages())
+                        .size(checkOutResponses.getSize())
                         .build())
                 .build();
     }

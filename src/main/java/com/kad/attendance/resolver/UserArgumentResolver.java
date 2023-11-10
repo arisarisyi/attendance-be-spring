@@ -24,6 +24,8 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
     @Autowired
     private JwtService jwtService;
 
+
+
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return User.class.equals(parameter.getParameterType());
@@ -36,6 +38,7 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
         String jwtToken = token.substring(7);
 
         String npk = jwtService.extractNpk(jwtToken);
+        boolean tokenExp = jwtService.isTokenExpired(jwtToken);
 
         if(token == null){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Unauthorized");
@@ -44,7 +47,7 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
         User user = userRepository.findByNpk(npk)
                 .orElseThrow(()->new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Unauthorized"));
 
-        if (user.getTokenExpiredAt() < System.currentTimeMillis()) {
+        if (tokenExp == true) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
 
