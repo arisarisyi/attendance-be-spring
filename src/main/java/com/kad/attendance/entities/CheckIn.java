@@ -24,6 +24,14 @@ public class CheckIn extends BaseEntity{
 
     private Double longitude;
 
+    private String date;
+
+    private String month;
+
+    private String year;
+
+    private String time;
+
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     @JsonBackReference

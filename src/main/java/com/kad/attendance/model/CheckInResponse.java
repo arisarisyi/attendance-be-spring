@@ -14,5 +14,9 @@ public class CheckInResponse {
     private Long id;
     private Double latitude;
     private Double longitude;
+    private String date;
+    private String month;
+    private String year;
+    private String time;
     private UserResponse user;
 }

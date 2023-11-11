@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -63,6 +65,10 @@ public class CheckOutService {
                 .user(userResponse)
                 .latitude(checkOut.getLatitude())
                 .longitude(checkOut.getLongitude())
+                .date(checkOut.getDate())
+                .month(checkOut.getMonth())
+                .year(checkOut.getYear())
+                .time(checkOut.getTime())
                 .build();
     }
 
@@ -70,9 +76,27 @@ public class CheckOutService {
     public CheckOutResponse checkOut(User user, CheckOutRequest request){
         validation.validate(request);
 
+        LocalDateTime localDateTime = LocalDateTime.now();
+
+        // Menggunakan DateTimeFormatter untuk format khusus
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd");
+        DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MM");
+        DateTimeFormatter yearFormatter = DateTimeFormatter.ofPattern("yyyy");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+        // Mendapatkan nilai-nilai yang diinginkan
+        String date = localDateTime.format(dateFormatter);
+        String month = localDateTime.format(monthFormatter);
+        String year = localDateTime.format(yearFormatter);
+        String time = localDateTime.format(timeFormatter);
+
         CheckOut checkOut = new CheckOut();
         checkOut.setLatitude(request.getLatitude());
         checkOut.setLongitude(request.getLongitude());
+        checkOut.setDate(date);
+        checkOut.setMonth(month);
+        checkOut.setYear(year);
+        checkOut.setTime(time);
         checkOut.setUser(user);
 
         checkOutRepository.save(checkOut);

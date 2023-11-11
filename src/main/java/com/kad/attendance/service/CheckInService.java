@@ -23,6 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,9 +53,27 @@ public class CheckInService {
 
             validation.validate(request);
 
+        LocalDateTime localDateTime = LocalDateTime.now();
+
+        // Menggunakan DateTimeFormatter untuk format khusus
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd");
+        DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MM");
+        DateTimeFormatter yearFormatter = DateTimeFormatter.ofPattern("yyyy");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+        // Mendapatkan nilai-nilai yang diinginkan
+        String date = localDateTime.format(dateFormatter);
+        String month = localDateTime.format(monthFormatter);
+        String year = localDateTime.format(yearFormatter);
+        String time = localDateTime.format(timeFormatter);
+
             CheckIn checkIn = new CheckIn();
             checkIn.setLatitude(request.getLatitude());
             checkIn.setLongitude(request.getLongitude());
+            checkIn.setDate(date);
+            checkIn.setMonth(month);
+            checkIn.setYear(year);
+            checkIn.setTime(time);
             checkIn.setUser(user);
 
             checkInRepository.save(checkIn);
@@ -67,6 +89,10 @@ public class CheckInService {
                 .user(userResponse)
                 .latitude(checkIn.getLatitude())
                 .longitude(checkIn.getLongitude())
+                .date(checkIn.getDate())
+                .month(checkIn.getMonth())
+                .year(checkIn.getYear())
+                .time(checkIn.getTime())
                 .build();
     }
 
@@ -77,6 +103,24 @@ public class CheckInService {
                 .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"check in not found"));
 
         UserResponse userResponse = toUserResponse(user);
+
+//        // Mendapatkan waktu penciptaan CheckIn dari database
+//        Date timeYesterday = checkIn.getCreatedAt();
+//
+//        // Konversi Date ke LocalDateTime
+//        LocalDateTime localDateTimeYesterday = timeYesterday.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+//
+//        // Mendapatkan instance dari LocalDateTime untuk waktu sekarang
+//        LocalDateTime timeNow = LocalDateTime.now();
+//
+//        // Menampilkan hasil
+//        System.out.println("Waktu Sekarang: " + timeNow);
+//        System.out.println("Waktu Kemarin: " + localDateTimeYesterday);
+//
+//        // Menghitung perbedaan jam antara waktu sekarang dan waktu kemarin
+//        long perbedaanJam = ChronoUnit.HOURS.between(localDateTimeYesterday, timeNow);
+//
+//        System.out.println("Perbedaan Jam: " + perbedaanJam + " jam");
 
         return  toCheckInResponse(userResponse,checkIn);
     }
