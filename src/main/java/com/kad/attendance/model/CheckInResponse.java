@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,5 +20,6 @@ public class CheckInResponse {
     private String month;
     private String year;
     private String time;
+    private Date createdAt;
     private UserResponse user;
 }

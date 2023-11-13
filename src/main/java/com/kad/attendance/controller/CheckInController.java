@@ -47,7 +47,7 @@ public class CheckInController {
     }
 
     @GetMapping(
-            path = "/api/check-in",
+            path = "/check-in",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public WebResponse<List<CheckInResponse>> search(@Parameter(hidden = true) User user,
