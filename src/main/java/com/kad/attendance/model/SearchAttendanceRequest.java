@@ -1,24 +1,26 @@
 package com.kad.attendance.model;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CheckOutResponse {
-    private Long id;
-    private Double latitude;
-    private Double longitude;
-    private String date;
-    private String month;
-    private String year;
-    private String time;
+public class SearchAttendanceRequest {
+    private UUID userId;
+
     private Date createdAt;
-    private UserResponse user;
+
+    @NotNull
+    private Integer page;
+
+    @NotNull
+    private Integer size;
 }
