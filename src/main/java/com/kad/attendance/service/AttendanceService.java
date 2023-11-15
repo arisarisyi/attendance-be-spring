@@ -8,15 +8,12 @@ import com.kad.attendance.model.SearchAttendanceRequest;
 import com.kad.attendance.model.UserResponse;
 import com.kad.attendance.repository.CheckInRepository;
 import com.kad.attendance.repository.CheckOutRepository;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,32 +35,16 @@ public class AttendanceService {
 
     @Transactional(readOnly = true)
     public Page<AttendanceResponse> search(User user, SearchAttendanceRequest request) {
-        Specification<CheckIn> specification = (root, query, builder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            predicates.add(builder.equal(root.get("user"), user));
-
-            if (Objects.nonNull(request.getCreatedAt())) {
-                Expression<Date> createdAtDate = builder.function("DATE", Date.class, root.get("createdAt"));
-                predicates.add(builder.equal(createdAtDate, request.getCreatedAt()));
-            }
-
-            if (Objects.nonNull(request.getUserId())) {
-                predicates.add(builder.equal(root.get("user").get("id"), request.getUserId()));
-            }else {
-                predicates.add(builder.equal(root.get("user").get("id"), user.getId()));
-            }
-
-            return query.where(predicates.toArray(new Predicate[]{})).getRestriction();
-        };
+        UUID userIdToUse = Objects.nonNull(request.getUserId()) ? request.getUserId() : user.getId();
 
         UserResponse userResponse = toUserResponse(user);
 
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        Page<CheckIn> checkIns = checkInRepository.findAll(specification, pageable);
+        Page<CheckIn> checkIns = checkInRepository.findAllByUserId(userIdToUse,pageable);
 
         List<AttendanceResponse> checkInCheckoutResponses = checkIns.getContent().stream()
                 .map(checkIn -> {
-                    List<CheckOut> checkouts = checkOutRepository.findByUserIdAndCreatedAt(user.getId(),checkIn.getCreatedAt());
+                    List<CheckOut> checkouts = checkOutRepository.findByUserIdAndCreatedAt(userIdToUse,checkIn.getCreatedAt());
 
                     CheckOut checkout = checkouts.stream()
                             .filter(co -> co.getCreatedAt() != null)

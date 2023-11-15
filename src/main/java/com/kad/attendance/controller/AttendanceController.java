@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -31,6 +32,7 @@ public class AttendanceController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public WebResponse<List<AttendanceResponse>> search(@Parameter(hidden = true) User user,
+                                                        @RequestParam(value = "userId",required = false) UUID userId,
                                                         @RequestParam(value = "createdAt", required = false) Date createdAt,
                                                         @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
                                                         @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
@@ -38,6 +40,7 @@ public class AttendanceController {
                 .page(page)
                 .size(size)
                 .createdAt(createdAt)
+                .userId(userId)
                 .build();
 
         Page<AttendanceResponse> attendanceResponses = attendanceService.search(user,request);
